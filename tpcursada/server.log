@@ -1,0 +1,11 @@
+nohup: no se tendrá en cuenta la entrada
+✅ Conexión exitosa a PostgreSQL
+🚀 Servidor corriendo en http://localhost:8080
+2025/10/26 21:21:47 CreateMira error: *pq.Error - pq: insert or update on table "mira" violates foreign key constraint "mira_idp_fkey"
+2025/10/26 21:21:47 pqErr.Code=23503 Detail=Key (idp)=(1) is not present in table "pelicula".
+2025/10/26 21:22:06 CreateMira error: *pq.Error - pq: insert or update on table "mira" violates foreign key constraint "mira_idp_fkey"
+2025/10/26 21:22:06 pqErr.Code=23503 Detail=Key (idp)=(1) is not present in table "pelicula".
+2025/10/26 21:28:38 CreateMira error: *pq.Error - pq: insert or update on table "mira" violates foreign key constraint "mira_idp_fkey"
+2025/10/26 21:28:38 pqErr.Code=23503 Detail=Key (idp)=(1) is not present in table "pelicula".
+2025/10/26 21:33:26 CreateMira error: *pq.Error - pq: insert or update on table "mira" violates foreign key constraint "mira_idp_fkey"
+2025/10/26 21:33:26 pqErr.Code=23503 Detail=Key (idp)=(1) is not present in table "pelicula".
