@@ -51,23 +51,23 @@ go mod init tp.com/tpcursada
 make sqlc
 ```
 
-1) Levantar la base de datos en un contenedor:
+2) Levantar la base de datos en un contenedor:
 ```bash
 make db-up
 ```
 
-2) Esperar a que PostgreSQL esté listo (se revisa dentro del contenedor):
+3) Esperar a que PostgreSQL esté listo (se revisa dentro del contenedor):
 ```bash
 make db-wait
 ```
 
-3) (Opcional) Generar código a partir de las consultas SQL con sqlc:
+4) (Opcional) Generar código a partir de las consultas SQL con sqlc:
 
 ```bash
 make sqlc
 ```
 
-4) Compilar y ejecutar el servidor (o usar `make all` para ejecutar la secuencia completa):
+5) Compilar y ejecutar el servidor (o usar `make all` para ejecutar la secuencia completa):
 ```bash
 # compilar
 make build
@@ -79,12 +79,12 @@ make start
 make all
 ```
 
-5) (Opcional) Poblar datos de ejemplo en la API:
+6) (Opcional) Poblar datos de ejemplo en la API:
 ```bash
 make seed
 ```
 
-6) Parar y eliminar contenedores/volúmenes cuando termines:
+7) Parar y eliminar contenedores/volúmenes cuando termines:
 ```bash
 make db-down
 ```
