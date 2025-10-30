@@ -8,6 +8,7 @@ En el directorio tp4 se encuentra dicho tp.
 Desde aqui en adelante se van a encontrar separados, antes no lo enviamos de esta menara, pedimos disculpas!
 
 Alumnas:
-Acevedo, Belen.
 
-Artaza, Sheila
+# Acevedo, Belen.
+
+# Artaza, Sheila
