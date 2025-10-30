@@ -1,0 +1,185 @@
+
+/* Base */
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 30px;
+  /* keep the purple palette but make a subtle diagonal gradient for depth */
+  background: linear-gradient(135deg, #6b2f66 0%, #4a1d4a 100%);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+h1 {
+  color: #ffd54a;
+  margin-bottom: 8px;
+}
+
+form {
+  margin-bottom: 20px;
+}
+
+input {
+  margin: 5px;
+  padding: 10px;
+  border: 1px solid rgba(47,4,107,0.6);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.03);
+  color: #fff;
+}
+
+input::placeholder { color: rgba(255,255,255,0.6); }
+
+button {
+  background-color: #ffd54a;
+  color: #2b1b3a;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+/* Generic list styling (used as baseline) */
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+/* Entity list items: darker translucent background and white text for contrast */
+body.page-peliculas ul#pelicula-list li,
+body.page-usuarios ul#usuario-list li,
+body.page-miras ul#mira-list li {
+  background: rgba(255,255,255,0.06);
+  color: #ffffff;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+}
+
+/* Inicio: hero y cards */
+.hero {
+  color: white;
+  text-align: center;
+  max-width: 1100px;
+  margin: 10px auto 40px auto;
+  padding: 20px;
+}
+.hero h2 {
+  font-size: 2.25rem;
+  margin-bottom: 0.4rem;
+}
+.hero p {
+  opacity: 0.95;
+  margin-bottom: 1.2rem;
+  color: #efe6f6;
+}
+.cards {
+  display: flex;
+  gap: 1.2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 22px;
+  width: 300px;
+  border-radius: 12px;
+  text-align: left;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.45);
+  transition: transform .22s ease, box-shadow .22s ease;
+}
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 18px 34px rgba(0,0,0,0.6);
+}
+.card h3 { color: #fff; margin-top: 0; font-size: 1.2rem }
+.card p { color: #f3eefd; font-size: 0.95rem }
+.btn {
+  display: inline-block;
+  margin-top: 12px;
+  background: #ffd54a;
+  color: #2b1b3a;
+  padding: 10px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 700;
+}
+.btn:hover { opacity: 0.95 }
+
+/* Small tweaks for inline edit forms */
+.inline-edit-form input { margin-right: 8px }
+
+/* Make nav links on entity pages (peliculas/usuarios/miras) lime for contrast */
+body.page-peliculas nav a,
+body.page-usuarios nav a,
+body.page-miras nav a {
+  color: #ffd54a; /* lima/chartreuse */
+  text-decoration: none;
+  font-weight: 600;
+}
+
+body.page-peliculas nav a:hover,
+body.page-usuarios nav a:hover,
+body.page-miras nav a:hover {
+  text-decoration: underline;
+  opacity: 0.95;
+}
+
+/* also ensure visited links stay readable */
+body.page-peliculas nav a:visited,
+body.page-usuarios nav a:visited,
+body.page-miras nav a:visited {
+  color: #9fe600;
+}
+
+/* Responsive tweaks */
+@media (max-width: 720px) {
+  .cards { flex-direction: column; align-items: center }
+  body { margin: 16px }
+}
+
+/* Make H2 titles lime on entity pages so they're visible over the purple background */
+body.page-peliculas h2,
+body.page-usuarios h2,
+body.page-miras h2 {
+  color: #bfff00;
+  margin-top: 14px;
+}
+
+/* Make the welcome text on the index page lime as requested */
+body.page-inicio header p,
+body.page-inicio .hero h2 {
+  color: #bfff00;
+}
+
+/* Make nav links on entity pages (peliculas/usuarios/miras) lime for contrast */
+body.page-peliculas nav a,
+body.page-usuarios nav a,
+body.page-miras nav a {
+  color: #bfff00; /* lima/chartreuse */
+  text-decoration: none;
+  font-weight: 600;
+}
+
+body.page-peliculas nav a:hover,
+body.page-usuarios nav a:hover,
+body.page-miras nav a:hover {
+  text-decoration: underline;
+  opacity: 0.95;
+}
+
+/* also ensure visited links stay readable */
+body.page-peliculas nav a:visited,
+body.page-usuarios nav a:visited,
+body.page-miras nav a:visited {
+  color: #9fe600;
+}
+
+
+

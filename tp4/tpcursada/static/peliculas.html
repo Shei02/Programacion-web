@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Películas</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="page-peliculas">
+  <h1>Películas</h1>
+  <nav>
+    <a href="/">Inicio</a>
+    <a href="/peliculas">Películas</a>
+    <a href="/usuarios">Usuarios</a>
+    <a href="/miras">Miras</a>
+  </nav>
+
+  <!-- Formulario para crear nuevas películas (igual que en index.html) -->
+  <h2>Agregar nueva Película</h2>
+  <form id="pelicula-form"> 
+    <input type="text" id="titulo" placeholder="Titulo" required>
+    <input type="number" id="duracion" placeholder="Duracion (en minutos)" required>
+    <input type="text" id="director" placeholder="Director" required>
+    <input type="text" id="actores" placeholder="Actores" required>
+    <input type="number" id="edadmin" placeholder="Edad minima requerida" required>
+    <input type="text" id="sinopsis" placeholder="Sinopsis" required>
+    <input type="number" id="anioestr" placeholder="Año de estreno" required>
+    <button type="submit">Agregar</button>
+  </form>
+
+  <h2>Peliculas disponibles</h2>
+  <ul id="pelicula-list"></ul>
+
+  <script src="/static/peliculas.js"></script>
+</body>
+</html>
