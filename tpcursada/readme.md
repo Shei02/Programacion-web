@@ -41,7 +41,12 @@ cd /ruta/al/proyecto
 
 El repositorio incluye un `Makefile` con targets que simplifican los pasos comunes. A continuación los comandos principales que deberías ejecutar en este orden desde la raíz del proyecto:
 
-0) Hacer el sqlc generate (si no no funciona):
+0) Crear el modulo de go
+```bash
+go mod init tp.com/tpcursada
+```
+   
+1) Hacer el sqlc generate (si no no funciona), no pudimos hacer que se genere al hacer make all (automatico):
 ```bash
 make sqlc
 ```
