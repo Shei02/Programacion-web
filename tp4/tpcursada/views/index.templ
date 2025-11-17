@@ -1,0 +1,23 @@
+{{/* index.templ: define el contenido principal y compone listas y formularios */}}
+
+{{define "content"}}
+<div class="container">
+  <section>
+    <h2>Películas</h2>
+    {{template "pelicula_form" .}}
+    {{template "pelicula_list" .}}
+  </section>
+
+  <section>
+    <h2>Usuarios</h2>
+    {{template "usuario_form" .}}
+    {{template "usuario_list" .}}
+  </section>
+
+  <section>
+    <h2>Calificaciones</h2>
+    {{template "mira_form" .}}
+    {{template "mira_list" .}}
+  </section>
+</div>
+{{end}}
