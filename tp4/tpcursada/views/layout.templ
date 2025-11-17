@@ -1,0 +1,30 @@
+{{/* layout.templ: plantilla base. Define "layout" y usa template "content" en los hijos. */}}
+{{define "layout"}}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{if .Title}}{{.Title}}{{else}}Mis películas favoritas{{end}}</title>
+  <!-- Pico.css desde CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@1.*/css/pico.min.css">
+  <!-- estilos locales opcionales -->
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="{{if .BodyClass}}{{.BodyClass}}{{else}}page-inicio{{end}}">
+  <header>
+    <h1>{{if .Header}}{{.Header}}{{else}}Plataforma de películas{{end}}</h1>
+    {{if .Intro}}<p>{{.Intro}}</p>{{end}}
+  </header>
+
+  <main>
+    {{/* Aquí se inserta el contenido específico de cada página */}}
+    {{template "content" .}}
+  </main>
+
+  <footer>
+    <p>© Plataforma de películas — Proyecto TP4</p>
+  </footer>
+</body>
+</html>
+{{end}}
