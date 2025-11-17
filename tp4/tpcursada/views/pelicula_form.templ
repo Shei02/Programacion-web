@@ -4,7 +4,7 @@
 <section>
   <h2>{{if .FormTitle}}{{.FormTitle}}{{else}}Crear / Editar Película{{end}}</h2>
 
-  <form method="post" action="{{if .Action}}{{.Action}}{{else}}/api/peliculas{{end}}">
+  <form method="post" action="{{if .Action}}{{.Action}}{{else}}/peliculas{{end}}">
     {{if .Pelicula.Idp}}<input type="hidden" name="idp" value="{{.Pelicula.Idp}}">{{end}}
 
     <label for="titulo">Título</label>

@@ -4,7 +4,7 @@
 <section>
   <h2>{{if .FormTitle}}{{.FormTitle}}{{else}}Agregar / Editar Calificación{{end}}</h2>
 
-  <form method="post" action="{{if .Action}}{{.Action}}{{else}}/api/miras{{end}}">
+  <form method="post" action="{{if .Action}}{{.Action}}{{else}}/miras{{end}}">
     {{if .Mira.Idp}}<input type="hidden" name="idp" value="{{.Mira.Idp}}">{{end}}
     {{if .Mira.Idu}}<input type="hidden" name="idu" value="{{.Mira.Idu}}">{{end}}
 

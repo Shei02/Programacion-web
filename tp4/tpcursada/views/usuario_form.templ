@@ -4,7 +4,7 @@
 <section>
   <h2>{{if .FormTitle}}{{.FormTitle}}{{else}}Crear / Editar Usuario{{end}}</h2>
 
-  <form method="post" action="{{if .Action}}{{.Action}}{{else}}/api/usuarios{{end}}">
+  <form method="post" action="{{if .Action}}{{.Action}}{{else}}/usuarios{{end}}">
     {{if .Usuario.Idu}}<input type="hidden" name="idu" value="{{.Usuario.Idu}}">{{end}}
 
     <label for="nomusu">Nombre de usuario</label>
