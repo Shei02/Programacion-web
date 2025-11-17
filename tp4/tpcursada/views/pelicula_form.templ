@@ -1,0 +1,34 @@
+{{/* pelicula_form.templ: formulario para crear/editar Película */}}
+
+{{define "pelicula_form"}}
+<section>
+  <h2>{{if .FormTitle}}{{.FormTitle}}{{else}}Crear / Editar Película{{end}}</h2>
+
+  <form method="post" action="{{if .Action}}{{.Action}}{{else}}/api/peliculas{{end}}">
+    {{if .Pelicula.Idp}}<input type="hidden" name="idp" value="{{.Pelicula.Idp}}">{{end}}
+
+    <label for="titulo">Título</label>
+    <input id="titulo" name="titulo" type="text" value="{{.Pelicula.Titulo}}" required>
+
+    <label for="duracion">Duración (min)</label>
+    <input id="duracion" name="duracion" type="number" value="{{.Pelicula.Duracion}}">
+
+    <label for="director">Director</label>
+    <input id="director" name="director" type="text" value="{{.Pelicula.Director}}">
+
+    <label for="actores">Actores</label>
+    <input id="actores" name="actores" type="text" value="{{.Pelicula.Actores}}">
+
+    <label for="edadmin">Edad mínima</label>
+    <input id="edadmin" name="edadmin" type="number" value="{{.Pelicula.Edadmin}}">
+
+    <label for="anioestr">Año de estreno</label>
+    <input id="anioestr" name="anioestr" type="number" value="{{.Pelicula.Anioestr}}">
+
+    <label for="sinopsis">Sinopsis</label>
+    <textarea id="sinopsis" name="sinopsis">{{.Pelicula.Sinopsis}}</textarea>
+
+    <button type="submit">Guardar</button>
+  </form>
+</section>
+{{end}}

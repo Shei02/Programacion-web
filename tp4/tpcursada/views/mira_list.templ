@@ -1,0 +1,36 @@
+{{/* mira_list.templ: lista de Miras / Calificaciones */}}
+
+{{define "mira_list"}}
+<section>
+  <h2>{{if .ListTitle}}{{.ListTitle}}{{else}}Calificaciones (Miras){{end}}</h2>
+
+  {{if .Miras}}
+  <table>
+    <thead>
+      <tr>
+        <th>Id Película</th>
+        <th>Id Usuario</th>
+        <th>¿Le gustó?</th>
+        <th>Calificación</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Miras}}
+      <tr>
+        <td>{{.Idp}}</td>
+        <td>{{.Idu}}</td>
+        <td>{{.Gustoono}}</td>
+        <td>{{.Calif}}</td>
+        <td>
+          <a href="/mira?idu={{.Idu}}&idp={{.Idp}}">Ver</a>
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+    <p>No se encontraron calificaciones.</p>
+  {{end}}
+</section>
+{{end}}

@@ -1,0 +1,37 @@
+{{/* usuario_list.templ: lista de Usuarios usando los campos del modelo sqlc */}}
+
+{{define "usuario_list"}}
+<section>
+  <h2>{{if .ListTitle}}{{.ListTitle}}{{else}}Usuarios{{end}}</h2>
+
+  {{if .Usuarios}}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Fecha Nac.</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Usuarios}}
+      <tr>
+        <td>{{.Idu}}</td>
+        <td>{{.Nomusu}}</td>
+        <td>{{.Email}}</td>
+        <td>{{.Fechanac.Format "2006-01-02"}}</td>
+        <td>
+          <a href="/usuario/{{.Idu}}">Ver</a>
+          <a href="/usuario/{{.Idu}}/editar">Editar</a>
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+    <p>No se encontraron usuarios.</p>
+  {{end}}
+</section>
+{{end}}

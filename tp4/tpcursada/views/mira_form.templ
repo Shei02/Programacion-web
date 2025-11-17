@@ -1,0 +1,20 @@
+{{/* mira_form.templ: formulario para crear/editar una Mira (calificación) */}}
+
+{{define "mira_form"}}
+<section>
+  <h2>{{if .FormTitle}}{{.FormTitle}}{{else}}Agregar / Editar Calificación{{end}}</h2>
+
+  <form method="post" action="{{if .Action}}{{.Action}}{{else}}/api/miras{{end}}">
+    {{if .Mira.Idp}}<input type="hidden" name="idp" value="{{.Mira.Idp}}">{{end}}
+    {{if .Mira.Idu}}<input type="hidden" name="idu" value="{{.Mira.Idu}}">{{end}}
+
+    <label for="gustoono">¿Le gustó? (sí/no)</label>
+    <input id="gustoono" name="gustoono" type="text" value="{{.Mira.Gustoono}}">
+
+    <label for="calif">Calificación (numérica)</label>
+    <input id="calif" name="calif" type="number" value="{{.Mira.Calif}}">
+
+    <button type="submit">Guardar</button>
+  </form>
+</section>
+{{end}}

@@ -1,0 +1,43 @@
+{{/* pelicula_list.templ: lista de Películas usando los campos del modelo sqlc */}}
+
+{{define "pelicula_list"}}
+<section>
+  <h2>{{if .ListTitle}}{{.ListTitle}}{{else}}Películas{{end}}</h2>
+
+  {{if .Peliculas}}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Título</th>
+        <th>Duración (min)</th>
+        <th>Director</th>
+        <th>Actores</th>
+        <th>Edad mínima</th>
+        <th>Año estreno</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Peliculas}}
+      <tr>
+        <td>{{.Idp}}</td>
+        <td>{{.Titulo}}</td>
+        <td>{{.Duracion}}</td>
+        <td>{{.Director}}</td>
+        <td>{{.Actores}}</td>
+        <td>{{.Edadmin}}</td>
+        <td>{{.Anioestr}}</td>
+        <td>
+          <a href="/pelicula/{{.Idp}}">Ver</a>
+          <a href="/pelicula/{{.Idp}}/editar">Editar</a>
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+    <p>No se encontraron películas.</p>
+  {{end}}
+</section>
+{{end}}

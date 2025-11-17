@@ -1,0 +1,25 @@
+{{/* usuario_form.templ: formulario para crear/editar Usuario */}}
+
+{{define "usuario_form"}}
+<section>
+  <h2>{{if .FormTitle}}{{.FormTitle}}{{else}}Crear / Editar Usuario{{end}}</h2>
+
+  <form method="post" action="{{if .Action}}{{.Action}}{{else}}/api/usuarios{{end}}">
+    {{if .Usuario.Idu}}<input type="hidden" name="idu" value="{{.Usuario.Idu}}">{{end}}
+
+    <label for="nomusu">Nombre de usuario</label>
+    <input id="nomusu" name="nomusu" type="text" value="{{.Usuario.Nomusu}}" required>
+
+    <label for="contrasenia">Contraseña</label>
+    <input id="contrasenia" name="contrasenia" type="password" value="{{.Usuario.Contrasenia}}">
+
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" value="{{.Usuario.Email}}">
+
+    <label for="fechanac">Fecha de nacimiento</label>
+    <input id="fechanac" name="fechanac" type="date" value="{{if .Usuario.Fechanac}}{{.Usuario.Fechanac.Format "2006-01-02"}}{{end}}">
+
+    <button type="submit">Guardar</button>
+  </form>
+</section>
+{{end}}
