@@ -13,11 +13,19 @@
 </head>
 <body class="{{if .BodyClass}}{{.BodyClass}}{{else}}page-inicio{{end}}">
   <header>
-    <h1>{{if .Header}}{{.Header}}{{else}}Plataforma de películas{{end}}</h1>
-    {{if .Intro}}<p>{{.Intro}}</p>{{end}}
+    <nav class="container">
+      <a href="/" class="contrast">Inicio</a>
+      <a href="/peliculas">Películas</a>
+      <a href="/usuarios">Usuarios</a>
+      <a href="/miras">Calificaciones</a>
+    </nav>
+    <div class="container">
+      <h1>{{if .Header}}{{.Header}}{{else}}Plataforma de películas{{end}}</h1>
+      {{if .Intro}}<p>{{.Intro}}</p>{{end}}
+    </div>
   </header>
 
-  <main>
+  <main class="container">
     {{/* Aquí se inserta el contenido específico de cada página */}}
     {{template "content" .}}
   </main>

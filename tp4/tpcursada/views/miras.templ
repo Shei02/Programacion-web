@@ -1,0 +1,14 @@
+{{/* Página de Miras: incluye formulario (con selects) y lista */}}
+
+{{define "content"}}
+<section>
+  <div class="grid">
+    <div>
+      {{template "mira_form" .}}
+    </div>
+    <div>
+      {{template "mira_list" .}}
+    </div>
+  </div>
+</section>
+{{end}}

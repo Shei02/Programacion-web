@@ -30,7 +30,11 @@
         <td>{{.Anioestr}}</td>
         <td>
           <a href="/pelicula/{{.Idp}}">Ver</a>
-          <a href="/pelicula/{{.Idp}}/editar">Editar</a>
+          <a class="contrast" href="/peliculas/editar?id={{.Idp}}">Editar</a>
+          <form method="post" action="/peliculas/delete" style="display:inline">
+            <input type="hidden" name="idp" value="{{.Idp}}">
+            <button type="submit">Eliminar</button>
+          </form>
         </td>
       </tr>
       {{end}}

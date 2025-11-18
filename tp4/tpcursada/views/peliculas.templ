@@ -1,0 +1,14 @@
+{{/* Página de Películas: incluye formulario y lista */}}
+
+{{define "content"}}
+<section>
+  <div class="grid">
+    <div>
+      {{template "pelicula_form" .}}
+    </div>
+    <div>
+      {{template "pelicula_list" .}}
+    </div>
+  </div>
+</section>
+{{end}}

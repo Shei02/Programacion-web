@@ -24,7 +24,11 @@
         <td>{{.Fechanac.Format "2006-01-02"}}</td>
         <td>
           <a href="/usuario/{{.Idu}}">Ver</a>
-          <a href="/usuario/{{.Idu}}/editar">Editar</a>
+          <a class="contrast" href="/usuarios/editar?id={{.Idu}}">Editar</a>
+          <form method="post" action="/usuarios/delete" style="display:inline">
+            <input type="hidden" name="idu" value="{{.Idu}}">
+            <button type="submit">Eliminar</button>
+          </form>
         </td>
       </tr>
       {{end}}

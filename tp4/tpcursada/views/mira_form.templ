@@ -5,14 +5,25 @@
   <h2>{{if .FormTitle}}{{.FormTitle}}{{else}}Agregar / Editar Calificación{{end}}</h2>
 
   <form method="post" action="{{if .Action}}{{.Action}}{{else}}/miras{{end}}">
-    {{if .Mira.Idp}}<input type="hidden" name="idp" value="{{.Mira.Idp}}">{{end}}
-    {{if .Mira.Idu}}<input type="hidden" name="idu" value="{{.Mira.Idu}}">{{end}}
+    <label for="idp">Película</label>
+    <select id="idp" name="idp">
+      {{range .Peliculas}}
+        <option value="{{.Idp}}" {{if $.Mira}}{{if eq $.Mira.Idp .Idp}}selected{{end}}{{end}}>{{.Titulo}}</option>
+      {{end}}
+    </select>
+
+    <label for="idu">Usuario</label>
+    <select id="idu" name="idu">
+      {{range .Usuarios}}
+        <option value="{{.Idu}}" {{if $.Mira}}{{if eq $.Mira.Idu .Idu}}selected{{end}}{{end}}>{{.Nomusu}}</option>
+      {{end}}
+    </select>
 
     <label for="gustoono">¿Le gustó? (sí/no)</label>
-    <input id="gustoono" name="gustoono" type="text" value="{{.Mira.Gustoono}}">
+    <input id="gustoono" name="gustoono" type="text" value="{{if .Mira}}{{.Mira.Gustoono}}{{end}}">
 
     <label for="calif">Calificación (numérica)</label>
-    <input id="calif" name="calif" type="number" value="{{.Mira.Calif}}">
+    <input id="calif" name="calif" type="number" value="{{if .Mira}}{{.Mira.Calif}}{{end}}">
 
     <button type="submit">Guardar</button>
   </form>

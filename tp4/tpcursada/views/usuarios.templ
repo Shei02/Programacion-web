@@ -1,0 +1,14 @@
+{{/* Página de Usuarios: incluye formulario y lista */}}
+
+{{define "content"}}
+<section>
+  <div class="grid">
+    <div>
+      {{template "usuario_form" .}}
+    </div>
+    <div>
+      {{template "usuario_list" .}}
+    </div>
+  </div>
+</section>
+{{end}}
