@@ -39,6 +39,20 @@ func (q *Queries) DeleteMira(ctx context.Context, idu int32) error {
 	return err
 }
 
+const deleteMiraByIDs = `-- name: DeleteMiraByIDs :exec
+DELETE FROM mira WHERE IDP = $1 AND IDU = $2
+`
+
+type DeleteMiraByIDsParams struct {
+	Idp int32 `json:"idp"`
+	Idu int32 `json:"idu"`
+}
+
+func (q *Queries) DeleteMiraByIDs(ctx context.Context, arg DeleteMiraByIDsParams) error {
+	_, err := q.db.ExecContext(ctx, deleteMiraByIDs, arg.Idp, arg.Idu)
+	return err
+}
+
 const getMira = `-- name: GetMira :many
 SELECT idp, idu, gustoono, calif FROM mira WHERE IDU = $1
 `

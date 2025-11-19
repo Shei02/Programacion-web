@@ -22,9 +22,11 @@ services:
       - .:/app
     depends_on:
       - db
-    tty: true
-    # opcionalmente podrías poner aquí un comando por defecto
-    command: make all
+    # Ejecutar la aplicación directamente en el contenedor (no intentar usar Docker dentro)
+    ports:
+      - "8080:8080"
+    restart: always
+    command: bash -c "sleep 3; go run ."
 
 volumes:
   db_data:

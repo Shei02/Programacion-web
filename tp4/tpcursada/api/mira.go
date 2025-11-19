@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/lib/pq"
 	db "tpe.com/tpcursada/db/sqlc"
@@ -24,6 +25,10 @@ func (s *Server) ListMiras(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error al listar miras", http.StatusInternalServerError)
 			return
 		}
+
+		if miras == nil {
+			miras = []db.Mira{}
+		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(miras)
 		return
@@ -40,6 +45,10 @@ func (s *Server) ListMiras(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error al listar miras", http.StatusInternalServerError)
 		return
 	}
+
+	if miras == nil {
+		miras = []db.Mira{}
+	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(miras)
 }
@@ -47,7 +56,10 @@ func (s *Server) ListMiras(w http.ResponseWriter, r *http.Request) {
 // --- GET /miras/{idu} ---
 // Lista las miras de un usuario dado (ruta /miras/{idu})
 func (s *Server) GetMira(w http.ResponseWriter, r *http.Request) {
-	parts := r.URL.Path[len("/miras/"):]
+	parts := r.URL.Path
+	// Accept both "/miras/..." and "/api/miras/..." mounting
+	parts = strings.TrimPrefix(parts, "/api")
+	parts = strings.TrimPrefix(parts, "/miras/")
 	ids := splitPath(parts)
 	if len(ids) != 1 {
 		http.Error(w, "URL inválida: use /miras/{idu}", http.StatusBadRequest)
@@ -65,6 +77,10 @@ func (s *Server) GetMira(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Error al obtener miras", http.StatusInternalServerError)
 		return
+	}
+
+	if miras == nil {
+		miras = []db.Mira{}
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(miras)
@@ -111,13 +127,15 @@ func (s *Server) CreateMira(w http.ResponseWriter, r *http.Request) {
 // --- DELETE /miras/{idp}/{idu} ---
 // Borra una mira específica a través del path
 func (s *Server) DeleteMiraByPath(w http.ResponseWriter, r *http.Request) {
-	parts := r.URL.Path[len("/miras/"):]
+	parts := r.URL.Path
+	parts = strings.TrimPrefix(parts, "/api")
+	parts = strings.TrimPrefix(parts, "/miras/")
 	ids := splitPath(parts)
 	if len(ids) != 2 {
 		http.Error(w, "URL inválida", http.StatusBadRequest)
 		return
 	}
-	_, err1 := strconv.Atoi(ids[0]) // idp (ignored for deletion by user)
+	idp, err1 := strconv.Atoi(ids[0])
 	idu, err2 := strconv.Atoi(ids[1])
 	if err1 != nil || err2 != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest)
@@ -125,8 +143,8 @@ func (s *Server) DeleteMiraByPath(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := context.Background()
-	// sqlc-generated DeleteMira expects (ctx, idu int32) -> delete by user id
-	if err := s.queries.DeleteMira(ctx, int32(idu)); err != nil {
+	// Delete the specific mira identified by idp + idu
+	if err := s.queries.DeleteMiraByIDs(ctx, db.DeleteMiraByIDsParams{Idp: int32(idp), Idu: int32(idu)}); err != nil {
 		http.Error(w, "Error al borrar mira", http.StatusInternalServerError)
 		return
 	}
@@ -172,7 +190,9 @@ func splitPath(path string) []string {
 // --- PUT /miras/{idp}/{idu} ---
 // Actualiza una mira específica identificada por idp e idu en el path
 func (s *Server) UpdateMira(w http.ResponseWriter, r *http.Request) {
-	parts := r.URL.Path[len("/miras/"):]
+	parts := r.URL.Path
+	parts = strings.TrimPrefix(parts, "/api")
+	parts = strings.TrimPrefix(parts, "/miras/")
 	ids := splitPath(parts)
 	if len(ids) != 2 {
 		http.Error(w, "URL inválida: use /miras/{idp}/{idu}", http.StatusBadRequest)

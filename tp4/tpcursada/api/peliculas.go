@@ -29,13 +29,18 @@ func (s *Server) ListPeliculas(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error al listar películas", http.StatusInternalServerError)
 		return
 	}
+	if pelis == nil {
+		pelis = []db.Pelicula{}
+	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(pelis)
 }
 
 // --- GET /peliculas/{id} ---
 func (s *Server) GetPelicula(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Path[len("/peliculas/"):]
+	parts := r.URL.Path
+	parts = strings.TrimPrefix(parts, "/api")
+	idStr := strings.TrimPrefix(parts, "/peliculas/")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest)

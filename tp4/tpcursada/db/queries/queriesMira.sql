@@ -12,3 +12,6 @@ UPDATE mira SET gustoOno = $3, calif = $4 WHERE IDP = $1 AND IDU = $2;
 
 -- name: DeleteMira :exec
 DELETE FROM mira WHERE IDU = $1;
+
+-- name: DeleteMiraByIDs :exec
+DELETE FROM mira WHERE IDP = $1 AND IDU = $2;

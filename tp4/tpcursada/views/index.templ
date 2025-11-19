@@ -1,23 +1,33 @@
-{{/* index.templ: define el contenido principal y compone listas y formularios */}}
+{{/* index.templ: página de inicio - hero + cards + vistas rápidas */}}
 
-{{define "content"}}
-<div class="container">
-  <section>
-    <h2>Películas</h2>
-    {{template "pelicula_form" .}}
-    {{template "pelicula_list" .}}
-  </section>
+{{define "index"}}
+  <header>
+    <p>Bienvenido a la plataforma de películas en proceso de dos estudiantes cursando Programación web. Aquí podrás ver, encontrar y buscar tus películas favoritas de manera sencilla y eficiente — ¡ayudándote a decidir rápidamente qué ver!</p>
+    <p>Además vas a tener la posibilidad de calificar tu película.</p>
+  </header>
 
-  <section>
-    <h2>Usuarios</h2>
-    {{template "usuario_form" .}}
-    {{template "usuario_list" .}}
-  </section>
+  <section class="hero">
+    <h2>Bienvenido a la plataforma de películas</h2>
+    <p>Ve nuestras películas disponibles, gestiona usuarios y registra calificaciones desde las páginas dedicadas.</p>
 
-  <section>
-    <h2>Calificaciones</h2>
-    {{template "mira_form" .}}
-    {{template "mira_list" .}}
+    <div class="cards">
+      <article class="card">
+        <h3>Películas</h3>
+        <p>Explora la colección de películas. Podés ver, editar o agregar nuevas películas.</p>
+        <a class="btn" href="/peliculas">Ver películas</a>
+      </article>
+
+      <article class="card">
+        <h3>Usuarios</h3>
+        <p>¡Conoce nuestros usuarios! Podés crear, editar y eliminar perfiles.</p>
+        <a class="btn" href="/usuarios">Ver usuarios</a>
+      </article>
+
+      <article class="card">
+        <h3>Calificaciones</h3>
+        <p>¿Te gustó la película? Podés calificarla desde tu usuario.</p>
+        <a class="btn" href="/miras">Ver calificaciones</a>
+      </article>
+    </div>
   </section>
-</div>
 {{end}}

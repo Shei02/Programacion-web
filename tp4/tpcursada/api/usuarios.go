@@ -21,13 +21,18 @@ func (s *Server) ListUsuarios(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error al listar usuarios", http.StatusInternalServerError)
 		return
 	}
+	if users == nil {
+		users = []db.Usuario{}
+	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(users)
 }
 
 // --- GET /usuarios/{id} ---
 func (s *Server) GetUsuario(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Path[len("/usuarios/"):]
+	parts := r.URL.Path
+	parts = strings.TrimPrefix(parts, "/api")
+	idStr := strings.TrimPrefix(parts, "/usuarios/")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest)

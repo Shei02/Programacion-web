@@ -23,7 +23,8 @@
         <td>{{.Gustoono}}</td>
         <td>{{.Calif}}</td>
         <td>
-          <a href="/mira?idu={{.Idu}}&idp={{.Idp}}">Ver</a>
+          <a class="btn small" href="/miras/editar?idu={{.Idu}}&idp={{.Idp}}">Editar</a>
+          <button class="btn small danger" onclick="deleteMira({{.Idp}}, {{.Idu}})">Eliminar</button>
         </td>
       </tr>
       {{end}}
@@ -33,4 +34,17 @@
     <p>No se encontraron calificaciones.</p>
   {{end}}
 </section>
+<script>
+function deleteMira(idp, idu) {
+  fetch('/api/miras/' + idp + '/' + idu, { method: 'DELETE' })
+    .then(function(res) {
+      if (res.status === 204) {
+        location.reload();
+      } else {
+        res.text().then(function(t){ alert('Error al borrar: ' + t); });
+      }
+    })
+    .catch(function(err){ alert('Error de red: ' + err); });
+}
+</script>
 {{end}}

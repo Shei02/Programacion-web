@@ -17,15 +17,43 @@ DB_NAME=platpelis
 DB_PORT=5432
 
 # --- Targets ---
-.PHONY: all build run start clean test fmt tidy db-up db-down db-wait sqlc seed \
-	get-usuarios get-peliculas get-miras add-usuarios add-peliculas add-miras
+.PHONY: all build run start clean test fmt tidy db-up db-down db-wait sqlc \
+
+.PHONY: test-hurl
 
 # --- ALL: todo junto ---
-all: fmt tidy db-up db-wait sqlc build start
+all: fmt tidy db-up db-wait sqlc app-wait test-hurl 
+	@echo "🚀 Todo listo. El servidor está corriendo dentro del contenedor en http://localhost:8080"
+
+# --- Esperar a que la API web esté lista antes de ejecutar seed ---
+.PHONY: app-wait
+app-wait:
+	@echo "⏳ Esperando a que la API esté lista en http://localhost:8080..."
+	@i=0; \
+	while true; do \
+		code=$$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/usuarios 2>/dev/null || echo 000); \
+		if [ "$$code" = "200" ]; then echo "✅ API lista"; break; fi; \
+		i=$$((i+1)); \
+		if [ $$i -ge 60 ]; then echo "❌ Timeout esperando la API"; exit 1; fi; \
+		sleep 1; \
+	done
+
+# --- Templ (compilador de plantillas a Go) ---
+.PHONY: templ-install templ-generate
+
+templ-install:
+	@echo "🔧 Instalando 'templ' (si no está instalado)..."
+	@go install github.com/a-h/templ/cmd/templ@latest
+
+templ-generate: templ-install
+	@echo "📦 Generando plantillas compiladas con 'templ'..."
+	@templ generate ./views -o views/templates_gen.go -p views || \
+	(echo "Advertencia: 'templ generate' falló o 'templ' no está en PATH; asegurate de tener la herramienta instalada"; exit 1)
+	@echo "✅ Plantillas generadas en views/templates_gen.go"
 
 # --- Base de datos ---
 db-up:
-	@echo "🐳 Levantando PostgreSQL con Docker..."
+	@echo "🐳 Levantando servicios con Docker..."
 	@$(DC) up -d
 
 db-down:
@@ -36,7 +64,6 @@ db-wait:
 	@echo "⏳ Esperando a que la base de datos esté lista (dentro del contenedor)..."
 	@docker exec postgres_peliculas bash -c 'until pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done'
 	@echo "✅ Base de datos lista dentro del contenedor."
-
 
 # --- SQLC ---
 sqlc:
@@ -72,91 +99,6 @@ test:
 clean:
 	@echo "🧹 Limpiando proyecto..."
 	@rm -f $(BINARY)
-
-# --- Agregar y listar datos usando la API ---
-
-# Listar recursos
-get-usuarios:
-	@echo "📋 Listando usuarios..."
-	@curl -s http://localhost:8080/api/usuarios | sh -c 'command -v jq >/dev/null 2>&1 && jq . || (command -v python3 >/dev/null 2>&1 && python3 -m json.tool || cat)'
-	@echo
-
-get-peliculas:
-	@echo "📋 Listando películas..."
-	@curl -s http://localhost:8080/api/peliculas | sh -c 'command -v jq >/dev/null 2>&1 && jq . || (command -v python3 >/dev/null 2>&1 && python3 -m json.tool || cat)'
-	@echo
-
-get-miras:
-	@echo "📋 Listando miras del usuario 1..."
-	@curl -s "http://localhost:8080/api/miras/1" | sh -c 'command -v jq >/dev/null 2>&1 && jq . || (command -v python3 >/dev/null 2>&1 && python3 -m json.tool || cat)'
-
-	@echo "📋 Listando miras del usuario 2..."
-	@curl -s "http://localhost:8080/api/miras/2" | sh -c 'command -v jq >/dev/null 2>&1 && jq . || (command -v python3 >/dev/null 2>&1 && python3 -m json.tool || cat)'
-
-	@echo "📋 Listando miras del usuario 3..."
-	@curl -s "http://localhost:8080/api/miras/3" | sh -c 'command -v jq >/dev/null 2>&1 && jq . || (command -v python3 >/dev/null 2>&1 && python3 -m json.tool || cat)'
-
-# Agregar datos de ejemplo
-
-add-usuarios:
-	@echo "🌱 Agregando usuarios de ejemplo..."
-	@curl -sS -X POST http://localhost:8080/api/usuarios \
-	-H "Content-Type: application/json" \
-	-d '{"nomusu":"Sheila","contrasenia":"1234","email":"sheila@test.com","fechanac":"1990-05-12T00:00:00Z"}' | sh -c 'command -v jq >/dev/null 2>&1 && jq . || (command -v python3 >/dev/null 2>&1 && python3 -m json.tool || cat)'
-
-	@curl -sS -X POST http://localhost:8080/api/usuarios \
-	-H "Content-Type: application/json" \
-	-d '{"nomusu":"Esteban","contrasenia":"abcd","email":"esteban@test.com","fechanac":"1985-11-23T00:00:00Z"}' | sh -c 'command -v jq >/dev/null 2>&1 && jq . || (command -v python3 >/dev/null 2>&1 && python3 -m json.tool || cat)'
-
-	@curl -sS -X POST http://localhost:8080/api/usuarios \
-	-H "Content-Type: application/json" \
-	-d '{"nomusu":"Belen","contrasenia":"1234","email":"belen@test.com","fechanac":"1958-05-12T00:00:00Z"}' | sh -c 'command -v jq >/dev/null 2>&1 && jq . || (command -v python3 >/dev/null 2>&1 && python3 -m json.tool || cat)'
-
-	@curl -sS -X POST http://localhost:8080/api/usuarios \
-	-H "Content-Type: application/json" \
-	-d '{"nomusu":"Eden","contrasenia":"abcd","email":"eden@test.com","fechanac":"2002-11-23T00:00:00Z"}' | sh -c 'command -v jq >/dev/null 2>&1 && jq . || (command -v python3 >/dev/null 2>&1 && python3 -m json.tool || cat)'
-
-
-add-peliculas:
-	@echo "🌱 Agregando películas de ejemplo..."
-	@curl -sS -X POST http://localhost:8080/api/peliculas \
-	-H "Content-Type: application/json" \
-	-d '{"titulo":"Matrix","duracion":136,"director":"Lana Wachowski","actores":"Keanu Reeves, Laurence Fishburne","edadmin":13,"sinopsis":"Un hacker descubre la realidad simulada en la que vive.","anioestr":1999}' | sh -c 'command -v jq >/dev/null 2>&1 && jq . || (command -v python3 >/dev/null 2>&1 && python3 -m json.tool || cat)'
-
-	@curl -sS -X POST http://localhost:8080/api/peliculas \
-	-H "Content-Type: application/json" \
-	-d '{"titulo":"Inception","duracion":148,"director":"Christopher Nolan","actores":"Leonardo DiCaprio, Joseph Gordon-Levitt","edadmin":13,"sinopsis":"Un ladrón especializado en sueños roba secretos de la mente.","anioestr":2010}' | sh -c 'command -v jq >/dev/null 2>&1 && jq . || (command -v python3 >/dev/null 2>&1 && python3 -m json.tool || cat)'
-
-	@curl -sS -X POST http://localhost:8080/api/peliculas \
-	-H "Content-Type: application/json" \
-	-d '{"titulo":"Interstellar","duracion":169,"director":"Christopher Nolan","actores":"Matthew McConaughey, Anne Hathaway","edadmin":13,"sinopsis":"Un grupo de exploradores viaja a través de un agujero de gusano en busca de un nuevo hogar para la humanidad.","anioestr":2014}' | sh -c 'command -v jq >/dev/null 2>&1 && jq . || (command -v python3 >/dev/null 2>&1 && python3 -m json.tool || cat)'
-
-	@curl -sS -X POST http://localhost:8080/api/peliculas \
-	-H "Content-Type: application/json" \
-	-d '{"titulo":"The Godfather","duracion":175,"director":"Francis Ford Coppola","actores":"Marlon Brando, Al Pacino","edadmin":18,"sinopsis":"La historia de la familia mafiosa Corleone.","anioestr":1972}' | sh -c 'command -v jq >/dev/null 2>&1 && jq . || (command -v python3 >/dev/null 2>&1 && python3 -m json.tool || cat)'
-
-
-add-miras:
-	@echo "🌱 Agregando miras de ejemplo..."
-	@curl -sS -X POST http://localhost:8080/api/miras \
-	-H "Content-Type: application/json" \
-	-d '{"idp":1,"idu":1,"gustoono":"sí","calif":5}' | sh -c 'command -v jq >/dev/null 2>&1 && jq . || (command -v python3 >/dev/null 2>&1 && python3 -m json.tool || cat)'
-
-	@curl -sS -X POST http://localhost:8080/api/miras \
-	-H "Content-Type: application/json" \
-	-d '{"idp":2,"idu":2,"gustoono":"no","calif":1}' | sh -c 'command -v jq >/dev/null 2>&1 && jq . || (command -v python3 >/dev/null 2>&1 && python3 -m json.tool || cat)'
-
-	@curl -sS -X POST http://localhost:8080/api/miras \
-	-H "Content-Type: application/json" \
-	-d '{"idp":3,"idu":1,"gustoono":"sí","calif":5}' | sh -c 'command -v jq >/dev/null 2>&1 && jq . || (command -v python3 >/dev/null 2>&1 && python3 -m json.tool || cat)'
-
-	@curl -sS -X POST http://localhost:8080/api/miras \
-	-H "Content-Type: application/json" \
-	-d '{"idp":4,"idu":2,"gustoono":"no","calif":3}' | sh -c 'command -v jq >/dev/null 2>&1 && jq . || (command -v python3 >/dev/null 2>&1 && python3 -m json.tool || cat)'
-
-# Target que agrega todos los datos de ejemplo
-seed: add-usuarios add-peliculas add-miras
-	@echo "✅ Datos de ejemplo agregados."
 
 # --- Pruebas CRUD (curl) ---
 test-peliculas-get:
@@ -277,3 +219,8 @@ test-miras-delete:
 test-miras-crud: test-miras-get test-miras-put test-miras-delete
 
 test-crud: test-peliculas-crud test-usuarios-crud test-miras-crud
+
+test-hurl:
+	@echo "🔬 Ejecutando pruebas Hurl (requests.hurl)..."
+	@command -v hurl >/dev/null 2>&1 || (echo "Error: 'hurl' no está instalado. Instalalo desde https://github.com/Orange-OpenSource/hurl"; exit 1)
+	@hurl requests.hurl

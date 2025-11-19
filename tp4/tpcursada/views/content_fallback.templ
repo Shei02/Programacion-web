@@ -1,0 +1,6 @@
+{{/* content_fallback.templ: fallback template named 'content' for backward compatibility */}}
+
+{{define "content"}}
+  {{/* Si por alguna razón no se pasó .Content, renderizamos la página de inicio */}}
+  {{template "index" .}}
+{{end}}

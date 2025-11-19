@@ -19,11 +19,14 @@
       {{end}}
     </select>
 
-    <label for="gustoono">¿Le gustó? (sí/no)</label>
-    <input id="gustoono" name="gustoono" type="text" value="{{if .Mira}}{{.Mira.Gustoono}}{{end}}">
+    <label for="gustoono">¿Le gustó?</label>
+    <select id="gustoono" name="gustoono">
+      <option value="sí" {{if .Mira}}{{if eq .Mira.Gustoono "sí"}}selected{{end}}{{end}}>Sí</option>
+      <option value="no"  {{if .Mira}}{{if eq .Mira.Gustoono "no"}}selected{{end}}{{end}}>No</option>
+    </select>
 
-    <label for="calif">Calificación (numérica)</label>
-    <input id="calif" name="calif" type="number" value="{{if .Mira}}{{.Mira.Calif}}{{end}}">
+    <label for="calif">Calificación (1-5)</label>
+    <input id="calif" name="calif" type="number" min="1" max="5" value="{{if .Mira}}{{.Mira.Calif}}{{end}}">
 
     <button type="submit">Guardar</button>
   </form>
