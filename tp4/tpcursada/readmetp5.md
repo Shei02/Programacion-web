@@ -28,8 +28,11 @@ Este repositorio contiene una pequeña API en Go que gestiona películas, usuari
 
 Resumen rápido de comandos (rápido, para ejecutar ahora)
 ```bash
-git clone <repo-url>
-cd <repo-folder>/tp4/tpcursada
+git clone https://github.com/Shei02/Programacion-web.git
+cd Programacion-web
+git fetch origin feature/tp5-templates
+git checkout feature/tp5-templates
+cd tp4/tpcursada
 make all
 ```
 
