@@ -4,8 +4,10 @@
 <section>
   <div class="grid">
     <div>
-      {{/* Formulario: usar HTMX para enviar de forma parcial y evitar recarga completa */}}
-      {{template "pelicula_form" .}}
+      {{/* Contenedor del formulario para edición/creación; HTMX cargará aquí el form */}}
+      <div id="pelicula-form-container">
+        {{template "pelicula_form" .}}
+      </div>
     </div>
     <div>
       {{/* Contenedor de la lista: HTMX reemplazará este bloque con el fragmento retornado

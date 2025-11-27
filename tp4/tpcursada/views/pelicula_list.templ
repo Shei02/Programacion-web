@@ -31,8 +31,8 @@
         <td>{{.Anioestr}}</td>
         <td>{{.Sinopsis}}</td>
         <td>
-          <a class="btn small" href="/peliculas/editar?id={{.Idp}}">Editar</a>
-          <form method="post" action="/peliculas/delete" style="display:inline">
+          <a class="btn small" hx-get="/peliculas/editar?id={{.Idp}}" hx-target="#pelicula-form-container" hx-swap="outerHTML">Editar</a>
+          <form method="post" action="/peliculas/delete" style="display:inline" hx-post="/peliculas/delete" hx-target="#pelicula-list-container" hx-swap="outerHTML" hx-confirm="¿Eliminar esta película?">
             <input type="hidden" name="idp" value="{{.Idp}}">
             <button class="btn small" type="submit">Eliminar</button>
           </form>

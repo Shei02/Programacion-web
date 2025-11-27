@@ -269,6 +269,23 @@ func main() {
 			http.Error(w, "No se puede borrar pelicula/usuario porque tiene referencia en la tabla mira", http.StatusInternalServerError)
 			return
 		}
+
+		// Si la petición viene desde HTMX, devolver solo el fragmento del formulario
+		// para que HTMX lo inserte en el contenedor del formulario.
+		if r.Header.Get("HX-Request") == "true" {
+			frag := map[string]interface{}{
+				"Pelicula": peli,
+				"Action":   "/peliculas/edit",
+			}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if err := views.ParseTemplates().ExecuteTemplate(w, "pelicula_form", frag); err != nil {
+				log.Printf("error ejecutando template pelicula_form (HTMX): %v", err)
+				http.Error(w, "Error renderizando formulario de película", http.StatusInternalServerError)
+			}
+			return
+		}
+
+		// Petición normal: renderizar la página completa
 		data := map[string]interface{}{
 			"Title":     "Editar Película",
 			"Header":    "Editar Película",
@@ -314,6 +331,26 @@ func main() {
 			http.Error(w, "No se puede borrar pelicula/usuario porque tiene referencia en la tabla mira", http.StatusInternalServerError)
 			return
 		}
+
+		// Si la petición viene desde HTMX, devolver la lista actualizada de películas
+		if r.Header.Get("HX-Request") == "true" {
+			pelis, err := q.ListPelis(r.Context())
+			if err != nil {
+				log.Printf("error listando peliculas después de edit: %v", err)
+				http.Error(w, "Error al obtener películas", http.StatusInternalServerError)
+				return
+			}
+			frag := map[string]interface{}{"Peliculas": pelis}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if err := views.ParseTemplates().ExecuteTemplate(w, "pelicula_list", frag); err != nil {
+				log.Printf("error ejecutando template pelicula_list (edit HTMX): %v", err)
+				http.Error(w, "Error renderizando lista de películas", http.StatusInternalServerError)
+				return
+			}
+			return
+		}
+
+		// Petición normal: redirect al listado
 		http.Redirect(w, r, "/peliculas", http.StatusSeeOther)
 	})
 
@@ -333,6 +370,26 @@ func main() {
 			http.Error(w, "No se puede borrar pelicula/usuario porque tiene referencia en la tabla mira", http.StatusInternalServerError)
 			return
 		}
+
+		// Si la petición viene desde HTMX, devolver la lista actualizada de películas
+		if r.Header.Get("HX-Request") == "true" {
+			pelis, err := q.ListPelis(r.Context())
+			if err != nil {
+				log.Printf("error listando peliculas después de delete: %v", err)
+				http.Error(w, "Error al obtener películas", http.StatusInternalServerError)
+				return
+			}
+			frag := map[string]interface{}{"Peliculas": pelis}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if err := views.ParseTemplates().ExecuteTemplate(w, "pelicula_list", frag); err != nil {
+				log.Printf("error ejecutando template pelicula_list (delete HTMX): %v", err)
+				http.Error(w, "Error renderizando lista de películas", http.StatusInternalServerError)
+				return
+			}
+			return
+		}
+
+		// Petición normal: redirect
 		http.Redirect(w, r, "/peliculas", http.StatusSeeOther)
 	})
 
@@ -430,12 +487,28 @@ func main() {
 			return
 		}
 		// Also fetch the full usuarios list so the page shows the list alongside the edit form
+
 		usuarios, err := q.ListUsuario(r.Context())
 		if err != nil {
 			log.Printf("error listando usuarios para editar: %v", err)
 			http.Error(w, "No se puede borrar pelicula/usuario porque tiene referencia en la tabla mira", http.StatusInternalServerError)
 			return
 		}
+
+		// Si la petición viene desde HTMX, devolver solo el fragmento del formulario
+		if r.Header.Get("HX-Request") == "true" {
+			frag := map[string]interface{}{
+				"Usuario": usu,
+				"Action":  "/usuarios/edit",
+			}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if err := views.ParseTemplates().ExecuteTemplate(w, "usuario_form", frag); err != nil {
+				log.Printf("error ejecutando template usuario_form (HTMX): %v", err)
+				http.Error(w, "Error renderizando formulario de usuario", http.StatusInternalServerError)
+			}
+			return
+		}
+
 		data := map[string]interface{}{
 			"Title":     "Editar Usuario",
 			"Header":    "Editar Usuario",
@@ -479,6 +552,25 @@ func main() {
 			http.Error(w, "No se puede borrar pelicula/usuario porque tiene referencia en la tabla mira", http.StatusInternalServerError)
 			return
 		}
+
+		// Si la petición viene desde HTMX, devolver la lista actualizada de usuarios
+		if r.Header.Get("HX-Request") == "true" {
+			usuarios, err := q.ListUsuario(r.Context())
+			if err != nil {
+				log.Printf("error listando usuarios después de edit: %v", err)
+				http.Error(w, "Error al obtener usuarios", http.StatusInternalServerError)
+				return
+			}
+			frag := map[string]interface{}{"Usuarios": usuarios}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if err := views.ParseTemplates().ExecuteTemplate(w, "usuario_list", frag); err != nil {
+				log.Printf("error ejecutando template usuario_list (edit HTMX): %v", err)
+				http.Error(w, "Error renderizando lista de usuarios", http.StatusInternalServerError)
+				return
+			}
+			return
+		}
+
 		http.Redirect(w, r, "/usuarios", http.StatusSeeOther)
 	})
 
@@ -497,6 +589,25 @@ func main() {
 			http.Error(w, "No se puede borrar pelicula/usuario porque tiene referencia en la tabla mira", http.StatusInternalServerError)
 			return
 		}
+
+		// Si la petición viene desde HTMX, devolver la lista actualizada de usuarios
+		if r.Header.Get("HX-Request") == "true" {
+			usuarios, err := q.ListUsuario(r.Context())
+			if err != nil {
+				log.Printf("error listando usuarios después de delete: %v", err)
+				http.Error(w, "Error al obtener usuarios", http.StatusInternalServerError)
+				return
+			}
+			frag := map[string]interface{}{"Usuarios": usuarios}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if err := views.ParseTemplates().ExecuteTemplate(w, "usuario_list", frag); err != nil {
+				log.Printf("error ejecutando template usuario_list (delete HTMX): %v", err)
+				http.Error(w, "Error renderizando lista de usuarios", http.StatusInternalServerError)
+				return
+			}
+			return
+		}
+
 		http.Redirect(w, r, "/usuarios", http.StatusSeeOther)
 	})
 
@@ -637,6 +748,23 @@ func main() {
 			return
 		}
 
+
+		// Si la petición viene desde HTMX, devolver solo el formulario de edición
+		if r.Header.Get("HX-Request") == "true" {
+			frag := map[string]interface{}{
+				"Peliculas": pelis,
+				"Usuarios":  usuarios,
+				"Mira":      found,
+				"Action":    "/miras/edit",
+			}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if err := views.ParseTemplates().ExecuteTemplate(w, "mira_form", frag); err != nil {
+				log.Printf("error ejecutando template mira_form (HTMX): %v", err)
+				http.Error(w, "Error renderizando formulario de mira", http.StatusInternalServerError)
+			}
+			return
+		}
+
 		data := map[string]interface{}{
 			"Title":     "Editar Calificación",
 			"Header":    "Editar Calificación",
@@ -694,6 +822,25 @@ func main() {
 			http.Error(w, "No se puede borrar pelicula/usuario porque tiene referencia en la tabla mira", http.StatusInternalServerError)
 			return
 		}
+
+		// Si la petición viene desde HTMX, devolver la lista actualizada de miras
+		if r.Header.Get("HX-Request") == "true" {
+			miras, err := q.ListMira(r.Context())
+			if err != nil {
+				log.Printf("error listando miras después de edit: %v", err)
+				http.Error(w, "Error al obtener miras", http.StatusInternalServerError)
+				return
+			}
+			frag := map[string]interface{}{"Miras": miras}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if err := views.ParseTemplates().ExecuteTemplate(w, "mira_list", frag); err != nil {
+				log.Printf("error ejecutando template mira_list (edit HTMX): %v", err)
+				http.Error(w, "Error renderizando lista de miras", http.StatusInternalServerError)
+				return
+			}
+			return
+		}
+
 		http.Redirect(w, r, "/miras", http.StatusSeeOther)
 	})
 
@@ -707,12 +854,45 @@ func main() {
 			http.Error(w, "Bad request", http.StatusBadRequest)
 			return
 		}
+		idp, _ := strconv.Atoi(r.FormValue("idp"))
 		idu, _ := strconv.Atoi(r.FormValue("idu"))
-		if err := q.DeleteMira(r.Context(), int32(idu)); err != nil {
-			log.Printf("error eliminando miras: %v", err)
-			http.Error(w, "No se puede borrar pelicula/usuario porque tiene referencia en la tabla mira", http.StatusInternalServerError)
+		// Si se proporcionan ambos ids, borrar la mira concreta (IDP+IDU)
+		if idp != 0 && idu != 0 {
+			if err := q.DeleteMiraByIDs(r.Context(), db.DeleteMiraByIDsParams{Idp: int32(idp), Idu: int32(idu)}); err != nil {
+				log.Printf("error eliminando mira por ids: %v", err)
+				http.Error(w, "No se puede borrar la calificación", http.StatusInternalServerError)
+				return
+			}
+		} else if idu != 0 {
+			// Backwards compatibility: borrar por Idu (todas las miras del usuario)
+			if err := q.DeleteMira(r.Context(), int32(idu)); err != nil {
+				log.Printf("error eliminando miras por idu: %v", err)
+				http.Error(w, "No se puede borrar calificaciones", http.StatusInternalServerError)
+				return
+			}
+		} else {
+			http.Error(w, "idp o idu requerido", http.StatusBadRequest)
 			return
 		}
+
+		// Si la petición viene desde HTMX, devolver la lista actualizada de miras
+		if r.Header.Get("HX-Request") == "true" {
+			miras, err := q.ListMira(r.Context())
+			if err != nil {
+				log.Printf("error listando miras después de delete: %v", err)
+				http.Error(w, "Error al obtener miras", http.StatusInternalServerError)
+				return
+			}
+			frag := map[string]interface{}{"Miras": miras}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if err := views.ParseTemplates().ExecuteTemplate(w, "mira_list", frag); err != nil {
+				log.Printf("error ejecutando template mira_list (delete HTMX): %v", err)
+				http.Error(w, "Error renderizando lista de miras", http.StatusInternalServerError)
+				return
+			}
+			return
+		}
+
 		http.Redirect(w, r, "/miras", http.StatusSeeOther)
 	})
 

@@ -23,8 +23,8 @@
         <td>{{.Email}}</td>
         <td>{{.Fechanac.Format "2006-01-02"}}</td>
         <td>
-          <a class="btn small" href="/usuarios/editar?id={{.Idu}}">Editar</a>
-          <form method="post" action="/usuarios/delete" style="display:inline">
+          <a class="btn small" hx-get="/usuarios/editar?id={{.Idu}}" hx-target="#usuario-form-container" hx-swap="outerHTML">Editar</a>
+          <form method="post" action="/usuarios/delete" style="display:inline" hx-post="/usuarios/delete" hx-target="#usuario-list-container" hx-swap="outerHTML" hx-confirm="¿Eliminar este usuario?">
             <input type="hidden" name="idu" value="{{.Idu}}">
             <button class="btn small" type="submit">Eliminar</button>
           </form>

@@ -4,8 +4,10 @@
 <section>
   <div class="grid">
     <div>
-      {{/* Formulario: usar HTMX para envíos parciales */}}
-      {{template "mira_form" .}}
+      {{/* Contenedor del formulario para edición/creación; HTMX cargará aquí el form */}}
+      <div id="mira-form-container">
+        {{template "mira_form" .}}
+      </div>
     </div>
     <div>
       {{/* Contenedor de la lista para HTMX */}}

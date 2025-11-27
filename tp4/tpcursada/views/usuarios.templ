@@ -4,8 +4,10 @@
 <section>
   <div class="grid">
     <div>
-      {{/* Formulario: usar HTMX para envíos parciales */}}
-      {{template "usuario_form" .}}
+      {{/* Contenedor del formulario para edición/creación; HTMX cargará aquí el form */}}
+      <div id="usuario-form-container">
+        {{template "usuario_form" .}}
+      </div>
     </div>
     <div>
       {{/* Contenedor de la lista para HTMX */}}
