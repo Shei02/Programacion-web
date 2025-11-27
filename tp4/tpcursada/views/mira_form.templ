@@ -4,7 +4,8 @@
 <section>
   <h2>{{if .FormTitle}}{{.FormTitle}}{{else}}Agregar / Editar Calificación{{end}}</h2>
 
-  <form method="post" action="{{if .Action}}{{.Action}}{{else}}/miras{{end}}">
+  {{/* HTMX: enviar formulario parcialmente y actualizar solo la lista de calificaciones (miras) */}}
+  <form method="post" action="{{if .Action}}{{.Action}}{{else}}/miras{{end}}" hx-post="{{if .Action}}{{.Action}}{{else}}/miras{{end}}" hx-target="#mira-list-container" hx-swap="outerHTML">
     <label for="idp">Película</label>
     <select id="idp" name="idp">
       {{range .Peliculas}}

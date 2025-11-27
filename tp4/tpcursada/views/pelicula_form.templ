@@ -4,7 +4,15 @@
 <section>
   <h2>{{if .FormTitle}}{{.FormTitle}}{{else}}Crear / Editar Película{{end}}</h2>
 
-  <form method="post" action="{{if .Action}}{{.Action}}{{else}}/peliculas{{end}}">
+  {{/*
+    HTMX attributes added:
+    - hx-post: URL donde se envía el formulario (misma ruta que antes)
+    - hx-target: selector CSS del contenedor que se reemplazará con el fragmento retornado
+    - hx-swap: estrategia de intercambio (aquí usamos outerHTML para reemplazar todo el contenedor)
+    Con esto, al enviar el formulario no habrá recarga completa; el servidor devolverá
+    solo el fragmento de la lista y HTMX lo colocará en `#pelicula-list-container`.
+  */}}
+  <form method="post" action="{{if .Action}}{{.Action}}{{else}}/peliculas{{end}}" hx-post="{{if .Action}}{{.Action}}{{else}}/peliculas{{end}}" hx-target="#pelicula-list-container" hx-swap="outerHTML">
     {{if .Pelicula.Idp}}<input type="hidden" name="idp" value="{{.Pelicula.Idp}}">{{end}}
 
     <label for="titulo">Título</label>

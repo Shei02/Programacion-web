@@ -215,7 +215,26 @@ func main() {
 				http.Error(w, "No se puede borrar pelicula/usuario porque tiene referencia en la tabla mira", http.StatusInternalServerError)
 				return
 			}
-			http.Redirect(w, r, "/", http.StatusSeeOther)
+
+			// En TP6: si el formulario fue enviado por HTMX, devolvemos sólo
+			// el fragmento de la lista de películas para que HTMX lo inserte
+			// en el contenedor objetivo (sin recargar toda la página).
+			pelis, err := q.ListPelis(r.Context())
+			if err != nil {
+				log.Printf("error listando peliculas después de crear: %v", err)
+				http.Error(w, "Error al obtener películas", http.StatusInternalServerError)
+				return
+			}
+			fragData := map[string]interface{}{
+				"Peliculas": pelis,
+			}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			// Renderizar solo el template de la lista; HTMX recibirá el HTML
+			if err := views.ParseTemplates().ExecuteTemplate(w, "pelicula_list", fragData); err != nil {
+				log.Printf("error ejecutando template pelicula_list: %v", err)
+				http.Error(w, "Error renderizando lista de películas", http.StatusInternalServerError)
+				return
+			}
 		default:
 			http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 		}
@@ -365,8 +384,24 @@ func main() {
 				http.Error(w, "No se puede borrar pelicula/usuario porque tiene referencia en la tabla mira", http.StatusInternalServerError)
 				return
 			}
-			// Mantenerse en la pestaña de usuarios después de crear (no volver al inicio)
-			http.Redirect(w, r, "/usuarios", http.StatusSeeOther)
+
+			// En TP6: devolver solo el fragmento HTML de la lista de usuarios
+			// para que HTMX lo coloque en el contenedor sin recarga completa.
+			usuarios, err := q.ListUsuario(r.Context())
+			if err != nil {
+				log.Printf("error listando usuarios después de crear: %v", err)
+				http.Error(w, "Error al obtener usuarios", http.StatusInternalServerError)
+				return
+			}
+			frag := map[string]interface{}{
+				"Usuarios": usuarios,
+			}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if err := views.ParseTemplates().ExecuteTemplate(w, "usuario_list", frag); err != nil {
+				log.Printf("error ejecutando template usuario_list: %v", err)
+				http.Error(w, "Error renderizando lista de usuarios", http.StatusInternalServerError)
+				return
+			}
 		default:
 			http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 		}
@@ -523,7 +558,23 @@ func main() {
 				http.Error(w, "No se puede borrar pelicula/usuario porque tiene referencia en la tabla mira", http.StatusInternalServerError)
 				return
 			}
-			http.Redirect(w, r, "/", http.StatusSeeOther)
+
+			// En TP6: devolver solo el fragmento HTML de la lista de miras
+			miras, err := q.ListMira(r.Context())
+			if err != nil {
+				log.Printf("error listando miras después de crear: %v", err)
+				http.Error(w, "Error al obtener miras", http.StatusInternalServerError)
+				return
+			}
+			frag := map[string]interface{}{
+				"Miras": miras,
+			}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if err := views.ParseTemplates().ExecuteTemplate(w, "mira_list", frag); err != nil {
+				log.Printf("error ejecutando template mira_list: %v", err)
+				http.Error(w, "Error renderizando lista de miras", http.StatusInternalServerError)
+				return
+			}
 		default:
 			http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 		}

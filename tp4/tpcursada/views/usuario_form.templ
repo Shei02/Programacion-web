@@ -4,7 +4,8 @@
 <section>
   <h2>{{if .FormTitle}}{{.FormTitle}}{{else}}Crear / Editar Usuario{{end}}</h2>
 
-  <form method="post" action="{{if .Action}}{{.Action}}{{else}}/usuarios{{end}}">
+  {{/* HTMX: enviar formulario parcialmente y actualizar solo la lista de usuarios */}}
+  <form method="post" action="{{if .Action}}{{.Action}}{{else}}/usuarios{{end}}" hx-post="{{if .Action}}{{.Action}}{{else}}/usuarios{{end}}" hx-target="#usuario-list-container" hx-swap="outerHTML">
     {{if .Usuario.Idu}}<input type="hidden" name="idu" value="{{.Usuario.Idu}}">{{end}}
 
     <label for="nomusu">Nombre de usuario</label>

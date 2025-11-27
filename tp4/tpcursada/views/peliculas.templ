@@ -4,10 +4,15 @@
 <section>
   <div class="grid">
     <div>
+      {{/* Formulario: usar HTMX para enviar de forma parcial y evitar recarga completa */}}
       {{template "pelicula_form" .}}
     </div>
     <div>
-      {{template "pelicula_list" .}}
+      {{/* Contenedor de la lista: HTMX reemplazará este bloque con el fragmento retornado
+         por el servidor (hx-target="#pelicula-list-container" y hx-swap="outerHTML") */}}
+      <div id="pelicula-list-container">
+        {{template "pelicula_list" .}}
+      </div>
     </div>
   </div>
 </section>
