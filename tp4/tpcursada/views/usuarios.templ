@@ -10,10 +10,8 @@
       </div>
     </div>
     <div>
-      {{/* Contenedor de la lista para HTMX */}}
-      <div id="usuario-list-container">
-        {{template "usuario_list" .}}
-      </div>
+      {{/* La plantilla `usuario_list` incluye su propio contenedor `#usuario-list-container` */}}
+      {{template "usuario_list" .}}
     </div>
   </div>
 </section>

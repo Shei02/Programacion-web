@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	_ "github.com/lib/pq" // driver PostgreSQL
@@ -216,25 +217,26 @@ func main() {
 				return
 			}
 
-			// En TP6: si el formulario fue enviado por HTMX, devolvemos sólo
-			// el fragmento de la lista de películas para que HTMX lo inserte
-			// en el contenedor objetivo (sin recargar toda la página).
-			pelis, err := q.ListPelis(r.Context())
-			if err != nil {
-				log.Printf("error listando peliculas después de crear: %v", err)
-				http.Error(w, "Error al obtener películas", http.StatusInternalServerError)
+			// Si viene desde HTMX, devolver solo el fragmento de la lista (sin redirect)
+			if r.Header.Get("HX-Request") == "true" {
+				pelis, err := q.ListPelis(r.Context())
+				if err != nil {
+					log.Printf("error listando peliculas después de crear: %v", err)
+					http.Error(w, "Error al obtener películas", http.StatusInternalServerError)
+					return
+				}
+				fragData := map[string]interface{}{"Peliculas": pelis}
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				if err := views.ParseTemplates().ExecuteTemplate(w, "pelicula_list", fragData); err != nil {
+					log.Printf("error ejecutando template pelicula_list: %v", err)
+					http.Error(w, "Error renderizando lista de películas", http.StatusInternalServerError)
+					return
+				}
 				return
 			}
-			fragData := map[string]interface{}{
-				"Peliculas": pelis,
-			}
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			// Renderizar solo el template de la lista; HTMX recibirá el HTML
-			if err := views.ParseTemplates().ExecuteTemplate(w, "pelicula_list", fragData); err != nil {
-				log.Printf("error ejecutando template pelicula_list: %v", err)
-				http.Error(w, "Error renderizando lista de películas", http.StatusInternalServerError)
-				return
-			}
+
+			// Petición normal (no HTMX): PRG -> redirigir al listado de películas
+			http.Redirect(w, r, "/peliculas", http.StatusSeeOther)
 		default:
 			http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 		}
@@ -365,9 +367,38 @@ func main() {
 			return
 		}
 		idp, _ := strconv.Atoi(r.FormValue("idp"))
+		// Comprobar si existen miras que referencian esta película
+		var cnt int
+		if err := conn.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM mira WHERE IDP = $1", idp).Scan(&cnt); err != nil {
+			log.Printf("error comprobando referencias en mira (POST delete pelicula): %v", err)
+			http.Error(w, "Error comprobando referencias", http.StatusInternalServerError)
+			return
+		}
+		if cnt > 0 {
+			// No permitir borrado si existen referencias en mira
+			if r.Header.Get("HX-Request") == "true" {
+				pelis, err := q.ListPelis(r.Context())
+				if err != nil {
+					log.Printf("error listando peliculas para mensaje de referencia: %v", err)
+					http.Error(w, "Error al obtener películas", http.StatusInternalServerError)
+					return
+				}
+				frag := map[string]interface{}{"Peliculas": pelis, "Error": "No se puede eliminar la película porque está referenciada en la tabla " + "mira."}
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				if err := views.ParseTemplates().ExecuteTemplate(w, "pelicula_list", frag); err != nil {
+					log.Printf("error ejecutando template pelicula_list (delete blocked POST): %v", err)
+					http.Error(w, "Error renderizando lista de películas", http.StatusInternalServerError)
+					return
+				}
+				return
+			}
+			http.Error(w, "No se puede eliminar la película porque está referenciada en calificaciones", http.StatusConflict)
+			return
+		}
+
 		if err := q.DeletePeli(r.Context(), int32(idp)); err != nil {
 			log.Printf("error eliminando pelicula: %v", err)
-			http.Error(w, "No se puede borrar pelicula/usuario porque tiene referencia en la tabla mira", http.StatusInternalServerError)
+			http.Error(w, "Error eliminando película", http.StatusInternalServerError)
 			return
 		}
 
@@ -391,6 +422,79 @@ func main() {
 
 		// Petición normal: redirect
 		http.Redirect(w, r, "/peliculas", http.StatusSeeOther)
+	})
+
+	// DELETE /peliculas/{id} -> borra una película y responde 200 OK vacío
+	// Esto permite que HTMX use `hx-delete` y luego `hx-target="closest tr"` con
+	// `hx-swap="outerHTML"` para eliminar la fila del DOM sin recarga.
+	http.HandleFunc("/peliculas/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			// No manejamos otras operaciones por esta ruta aquí
+			http.NotFound(w, r)
+			return
+		}
+		idStr := strings.TrimPrefix(r.URL.Path, "/peliculas/")
+		idStr = strings.Trim(idStr, "/")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.Error(w, "ID inválido", http.StatusBadRequest)
+			return
+		}
+		// Comprobar si existen miras que referencian esta película
+		var cnt int
+		if err := conn.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM mira WHERE IDP = $1", id).Scan(&cnt); err != nil {
+			log.Printf("error comprobando referencias en mira (DELETE pelicula): %v", err)
+			http.Error(w, "Error comprobando referencias", http.StatusInternalServerError)
+			return
+		}
+		if cnt > 0 {
+			if r.Header.Get("HX-Request") == "true" {
+				pelis, err := q.ListPelis(r.Context())
+				if err != nil {
+					log.Printf("error listando peliculas para mensaje de referencia (DELETE): %v", err)
+					http.Error(w, "Error al obtener películas", http.StatusInternalServerError)
+					return
+				}
+				frag := map[string]interface{}{"Peliculas": pelis, "Error": "No se puede eliminar la película porque está referenciada en la tabla mira."}
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				if err := views.ParseTemplates().ExecuteTemplate(w, "pelicula_list", frag); err != nil {
+					log.Printf("error ejecutando template pelicula_list (delete blocked DELETE): %v", err)
+					http.Error(w, "Error renderizando lista de películas", http.StatusInternalServerError)
+					return
+				}
+				return
+			}
+			w.WriteHeader(http.StatusConflict)
+			return
+		}
+
+		if err := q.DeletePeli(r.Context(), int32(id)); err != nil {
+			log.Printf("error eliminando pelicula (DELETE): %v", err)
+			http.Error(w, "Error borrando película", http.StatusInternalServerError)
+			return
+		}
+		// Respuesta vacía 200 OK -> HTMX reemplazará el target por nada (efectivamente
+		// eliminando la fila del DOM).
+		// Si la petición viene desde HTMX, devolver la lista actualizada de películas
+		// como fragmento HTML para que el contenedor `#pelicula-list-container`
+		// sea reemplazado por la versión actualizada.
+		if r.Header.Get("HX-Request") == "true" {
+			pelis, err := q.ListPelis(r.Context())
+			if err != nil {
+				log.Printf("error listando peliculas después de delete (DELETE): %v", err)
+				http.Error(w, "Error al obtener películas", http.StatusInternalServerError)
+				return
+			}
+			frag := map[string]interface{}{"Peliculas": pelis}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if err := views.ParseTemplates().ExecuteTemplate(w, "pelicula_list", frag); err != nil {
+				log.Printf("error ejecutando template pelicula_list (delete HTMX DELETE): %v", err)
+				http.Error(w, "Error renderizando lista de películas", http.StatusInternalServerError)
+				return
+			}
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 	})
 
 	// Usuarios: GET page and POST (crear usuario)
@@ -442,23 +546,26 @@ func main() {
 				return
 			}
 
-			// En TP6: devolver solo el fragmento HTML de la lista de usuarios
-			// para que HTMX lo coloque en el contenedor sin recarga completa.
-			usuarios, err := q.ListUsuario(r.Context())
-			if err != nil {
-				log.Printf("error listando usuarios después de crear: %v", err)
-				http.Error(w, "Error al obtener usuarios", http.StatusInternalServerError)
+			// Si viene desde HTMX, devolver solo el fragmento de la lista
+			if r.Header.Get("HX-Request") == "true" {
+				usuarios, err := q.ListUsuario(r.Context())
+				if err != nil {
+					log.Printf("error listando usuarios después de crear: %v", err)
+					http.Error(w, "Error al obtener usuarios", http.StatusInternalServerError)
+					return
+				}
+				frag := map[string]interface{}{"Usuarios": usuarios}
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				if err := views.ParseTemplates().ExecuteTemplate(w, "usuario_list", frag); err != nil {
+					log.Printf("error ejecutando template usuario_list: %v", err)
+					http.Error(w, "Error renderizando lista de usuarios", http.StatusInternalServerError)
+					return
+				}
 				return
 			}
-			frag := map[string]interface{}{
-				"Usuarios": usuarios,
-			}
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			if err := views.ParseTemplates().ExecuteTemplate(w, "usuario_list", frag); err != nil {
-				log.Printf("error ejecutando template usuario_list: %v", err)
-				http.Error(w, "Error renderizando lista de usuarios", http.StatusInternalServerError)
-				return
-			}
+
+			// Petición normal: redirect al listado de usuarios
+			http.Redirect(w, r, "/usuarios", http.StatusSeeOther)
 		default:
 			http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 		}
@@ -487,7 +594,6 @@ func main() {
 			return
 		}
 		// Also fetch the full usuarios list so the page shows the list alongside the edit form
-
 		usuarios, err := q.ListUsuario(r.Context())
 		if err != nil {
 			log.Printf("error listando usuarios para editar: %v", err)
@@ -584,9 +690,40 @@ func main() {
 			return
 		}
 		idu, _ := strconv.Atoi(r.FormValue("idu"))
+		// Comprobar si existen miras que referencian a este usuario
+		var cnt int
+		if err := conn.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM mira WHERE IDU = $1", idu).Scan(&cnt); err != nil {
+			log.Printf("error comprobando referencias en mira (POST delete usuario): %v", err)
+			http.Error(w, "Error comprobando referencias", http.StatusInternalServerError)
+			return
+		}
+		if cnt > 0 {
+			// Si la petición viene desde HTMX, devolver la lista con un mensaje de error
+			if r.Header.Get("HX-Request") == "true" {
+				usuarios, err := q.ListUsuario(r.Context())
+				if err != nil {
+					log.Printf("error listando usuarios para mensaje de referencia: %v", err)
+					http.Error(w, "Error al obtener usuarios", http.StatusInternalServerError)
+					return
+				}
+				frag := map[string]interface{}{"Usuarios": usuarios, "Error": "No se puede eliminar el usuario porque está referenciado en la tabla mira."}
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				if err := views.ParseTemplates().ExecuteTemplate(w, "usuario_list", frag); err != nil {
+					log.Printf("error ejecutando template usuario_list (delete blocked POST): %v", err)
+					http.Error(w, "Error renderizando lista de usuarios", http.StatusInternalServerError)
+					return
+				}
+				return
+			}
+			// Para peticiones normales no-HTMX devolvemos 409 Conflict
+			http.Error(w, "No se puede eliminar el usuario porque está referenciado en calificaciones", http.StatusConflict)
+			return
+		}
+
+		// No hay referencias -> proceder a eliminar el usuario
 		if err := q.DeleteUsuario(r.Context(), int32(idu)); err != nil {
 			log.Printf("error eliminando usuario: %v", err)
-			http.Error(w, "No se puede borrar pelicula/usuario porque tiene referencia en la tabla mira", http.StatusInternalServerError)
+			http.Error(w, "Error eliminando usuario", http.StatusInternalServerError)
 			return
 		}
 
@@ -609,6 +746,73 @@ func main() {
 		}
 
 		http.Redirect(w, r, "/usuarios", http.StatusSeeOther)
+	})
+
+	// DELETE /usuarios/{id} -> borra un usuario y responde 200 OK vacío
+	http.HandleFunc("/usuarios/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			http.NotFound(w, r)
+			return
+		}
+		idStr := strings.TrimPrefix(r.URL.Path, "/usuarios/")
+		idStr = strings.Trim(idStr, "/")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.Error(w, "ID inválido", http.StatusBadRequest)
+			return
+		}
+		// Comprobar si existen miras que referencian a este usuario
+		var cnt int
+		if err := conn.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM mira WHERE IDU = $1", id).Scan(&cnt); err != nil {
+			log.Printf("error comprobando referencias en mira (DELETE usuario): %v", err)
+			http.Error(w, "Error comprobando referencias", http.StatusInternalServerError)
+			return
+		}
+		if cnt > 0 {
+			if r.Header.Get("HX-Request") == "true" {
+				usuarios, err := q.ListUsuario(r.Context())
+				if err != nil {
+					log.Printf("error listando usuarios para mensaje de referencia (DELETE): %v", err)
+					http.Error(w, "Error al obtener usuarios", http.StatusInternalServerError)
+					return
+				}
+				frag := map[string]interface{}{"Usuarios": usuarios, "Error": "No se puede eliminar el usuario porque está referenciado en la tabla mira."}
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				if err := views.ParseTemplates().ExecuteTemplate(w, "usuario_list", frag); err != nil {
+					log.Printf("error ejecutando template usuario_list (delete blocked DELETE): %v", err)
+					http.Error(w, "Error renderizando lista de usuarios", http.StatusInternalServerError)
+					return
+				}
+				return
+			}
+			w.WriteHeader(http.StatusConflict)
+			return
+		}
+
+		if err := q.DeleteUsuario(r.Context(), int32(id)); err != nil {
+			log.Printf("error eliminando usuario (DELETE): %v", err)
+			http.Error(w, "Error borrando usuario", http.StatusInternalServerError)
+			return
+		}
+
+		// Si la petición viene desde HTMX, devolver la lista actualizada de usuarios
+		if r.Header.Get("HX-Request") == "true" {
+			usuarios, err := q.ListUsuario(r.Context())
+			if err != nil {
+				log.Printf("error listando usuarios después de delete (DELETE): %v", err)
+				http.Error(w, "Error al obtener usuarios", http.StatusInternalServerError)
+				return
+			}
+			frag := map[string]interface{}{"Usuarios": usuarios}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if err := views.ParseTemplates().ExecuteTemplate(w, "usuario_list", frag); err != nil {
+				log.Printf("error ejecutando template usuario_list (delete HTMX DELETE): %v", err)
+				http.Error(w, "Error renderizando lista de usuarios", http.StatusInternalServerError)
+				return
+			}
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 	})
 
 	// Miras page (GET and POST for crear)
@@ -670,22 +874,26 @@ func main() {
 				return
 			}
 
-			// En TP6: devolver solo el fragmento HTML de la lista de miras
-			miras, err := q.ListMira(r.Context())
-			if err != nil {
-				log.Printf("error listando miras después de crear: %v", err)
-				http.Error(w, "Error al obtener miras", http.StatusInternalServerError)
+			// Si viene desde HTMX, devolver solo el fragmento de la lista de miras
+			if r.Header.Get("HX-Request") == "true" {
+				miras, err := q.ListMira(r.Context())
+				if err != nil {
+					log.Printf("error listando miras después de crear: %v", err)
+					http.Error(w, "Error al obtener miras", http.StatusInternalServerError)
+					return
+				}
+				frag := map[string]interface{}{"Miras": miras}
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				if err := views.ParseTemplates().ExecuteTemplate(w, "mira_list", frag); err != nil {
+					log.Printf("error ejecutando template mira_list: %v", err)
+					http.Error(w, "Error renderizando lista de miras", http.StatusInternalServerError)
+					return
+				}
 				return
 			}
-			frag := map[string]interface{}{
-				"Miras": miras,
-			}
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			if err := views.ParseTemplates().ExecuteTemplate(w, "mira_list", frag); err != nil {
-				log.Printf("error ejecutando template mira_list: %v", err)
-				http.Error(w, "Error renderizando lista de miras", http.StatusInternalServerError)
-				return
-			}
+
+			// Petición normal: redirect al listado de miras
+			http.Redirect(w, r, "/miras", http.StatusSeeOther)
 		default:
 			http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 		}
@@ -747,7 +955,6 @@ func main() {
 			http.Error(w, "No encontrado", http.StatusNotFound)
 			return
 		}
-
 
 		// Si la petición viene desde HTMX, devolver solo el formulario de edición
 		if r.Header.Get("HX-Request") == "true" {
@@ -894,6 +1101,54 @@ func main() {
 		}
 
 		http.Redirect(w, r, "/miras", http.StatusSeeOther)
+	})
+
+	// DELETE /miras/{idp}/{idu} -> borra una mira concreta y responde 200 OK vacío
+	http.HandleFunc("/miras/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			http.NotFound(w, r)
+			return
+		}
+		rest := strings.TrimPrefix(r.URL.Path, "/miras/")
+		rest = strings.Trim(rest, "/")
+		parts := strings.Split(rest, "/")
+		if len(parts) != 2 {
+			http.Error(w, "se requieren idp e idu", http.StatusBadRequest)
+			return
+		}
+		idp, err := strconv.Atoi(parts[0])
+		if err != nil {
+			http.Error(w, "idp inválido", http.StatusBadRequest)
+			return
+		}
+		idu, err := strconv.Atoi(parts[1])
+		if err != nil {
+			http.Error(w, "idu inválido", http.StatusBadRequest)
+			return
+		}
+		if err := q.DeleteMiraByIDs(r.Context(), db.DeleteMiraByIDsParams{Idp: int32(idp), Idu: int32(idu)}); err != nil {
+			log.Printf("error eliminando mira (DELETE ids): %v", err)
+			http.Error(w, "Error borrando calificación", http.StatusInternalServerError)
+			return
+		}
+		// Si la petición viene desde HTMX, devolver la lista actualizada de miras
+		if r.Header.Get("HX-Request") == "true" {
+			miras, err := q.ListMira(r.Context())
+			if err != nil {
+				log.Printf("error listando miras después de delete (DELETE ids): %v", err)
+				http.Error(w, "Error al obtener miras", http.StatusInternalServerError)
+				return
+			}
+			frag := map[string]interface{}{"Miras": miras}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if err := views.ParseTemplates().ExecuteTemplate(w, "mira_list", frag); err != nil {
+				log.Printf("error ejecutando template mira_list (delete HTMX DELETE): %v", err)
+				http.Error(w, "Error renderizando lista de miras", http.StatusInternalServerError)
+				return
+			}
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 	})
 
 	// No servimos más archivos estáticos desde /static/ —

@@ -10,11 +10,10 @@
       </div>
     </div>
     <div>
-      {{/* Contenedor de la lista: HTMX reemplazará este bloque con el fragmento retornado
-         por el servidor (hx-target="#pelicula-list-container" y hx-swap="outerHTML") */}}
-      <div id="pelicula-list-container">
-        {{template "pelicula_list" .}}
-      </div>
+      {{/* La plantilla `pelicula_list` incluye su propio contenedor `#pelicula-list-container`
+         para que las respuestas parciales de HTMX reemplacen el elemento con el mismo id
+         y el selector permanezca válido tras los swaps. */}}
+      {{template "pelicula_list" .}}
     </div>
   </div>
 </section>

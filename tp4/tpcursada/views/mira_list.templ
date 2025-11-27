@@ -1,8 +1,14 @@
 {{/* mira_list.templ: lista de Miras / Calificaciones */}}
 
 {{define "mira_list"}}
-<section>
+<div id="mira-list-container">
+  <section>
   <h2>{{if .ListTitle}}{{.ListTitle}}{{else}}Calificaciones (Miras){{end}}</h2>
+
+  {{/* Mensajes de error/estado que pueden venir desde el servidor (HTMX) */}}
+  {{if .Error}}
+  <div class="flash error">{{.Error}}</div>
+  {{end}}
 
   {{if .Miras}}
   <table>
@@ -23,11 +29,12 @@
         <td>{{.Gustoono}}</td>
         <td>{{.Calif}}</td>
         <td>
-          <a class="btn small" hx-get="/miras/editar?idu={{.Idu}}&idp={{.Idp}}" hx-target="#mira-form-container" hx-swap="outerHTML">Editar</a>
-          <form method="post" action="/miras/delete" style="display:inline" hx-post="/miras/delete" hx-target="#mira-list-container" hx-swap="outerHTML" hx-confirm="¿Eliminar esta calificación?">
+          <a href="/miras/editar?idu={{.Idu}}&idp={{.Idp}}" class="btn small" hx-get="/miras/editar?idu={{.Idu}}&idp={{.Idp}}" hx-target="#mira-form-container" hx-swap="outerHTML">Editar</a>
+          {{/* Botón de borrado sin recarga usando HTMX: enviamos DELETE a /miras/{idp}/{idu} */}}
+          <form method="post" action="/miras/delete" hx-post="/miras/delete" hx-target="#mira-list-container" hx-swap="outerHTML" style="display:inline">
             <input type="hidden" name="idp" value="{{.Idp}}">
             <input type="hidden" name="idu" value="{{.Idu}}">
-            <button class="btn small danger" type="submit">Eliminar</button>
+            <button type="submit" class="btn small danger">Eliminar</button>
           </form>
         </td>
       </tr>
@@ -37,7 +44,8 @@
   {{else}}
     <p>No se encontraron calificaciones.</p>
   {{end}}
-</section>
-<!-- Deleting miras ahora se hace vía HTMX (form hx-post) y el servidor devuelve
-     el fragmento actualizado de la lista que reemplaza #mira-list-container -->
+  </section>
+</div>
+<!-- Deleting miras ahora se hace vía HTMX y la plantilla incluye su propio
+  contenedor `#mira-list-container` para mantener el selector estable tras swaps. -->
 {{end}}

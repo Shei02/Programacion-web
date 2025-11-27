@@ -1,8 +1,14 @@
 {{/* usuario_list.templ: lista de Usuarios usando los campos del modelo sqlc */}}
 
 {{define "usuario_list"}}
-<section>
+<div id="usuario-list-container">
+  <section>
   <h2>{{if .ListTitle}}{{.ListTitle}}{{else}}Usuarios{{end}}</h2>
+
+  {{/* Mensajes de error/estado que pueden venir desde el servidor (HTMX) */}}
+  {{if .Error}}
+  <div class="flash error">{{.Error}}</div>
+  {{end}}
 
   {{if .Usuarios}}
   <table>
@@ -23,10 +29,11 @@
         <td>{{.Email}}</td>
         <td>{{.Fechanac.Format "2006-01-02"}}</td>
         <td>
-          <a class="btn small" hx-get="/usuarios/editar?id={{.Idu}}" hx-target="#usuario-form-container" hx-swap="outerHTML">Editar</a>
-          <form method="post" action="/usuarios/delete" style="display:inline" hx-post="/usuarios/delete" hx-target="#usuario-list-container" hx-swap="outerHTML" hx-confirm="¿Eliminar este usuario?">
+          <a href="/usuarios/editar?id={{.Idu}}" class="btn small" hx-get="/usuarios/editar?id={{.Idu}}" hx-target="#usuario-form-container" hx-swap="outerHTML">Editar</a>
+          {{/* Botón de borrado sin recarga usando HTMX: envía DELETE a /usuarios/{id} */}}
+          <form method="post" action="/usuarios/delete" hx-post="/usuarios/delete" hx-target="#usuario-list-container" hx-swap="outerHTML" style="display:inline">
             <input type="hidden" name="idu" value="{{.Idu}}">
-            <button class="btn small" type="submit">Eliminar</button>
+            <button type="submit" class="btn small">Eliminar</button>
           </form>
         </td>
       </tr>
@@ -36,5 +43,6 @@
   {{else}}
     <p>No se encontraron usuarios.</p>
   {{end}}
-</section>
+  </section>
+</div>
 {{end}}

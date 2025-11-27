@@ -1,3 +1,5 @@
 nohup: no se tendrá en cuenta la entrada
-✅ Conexión exitosa a PostgreSQL
-🚀 Servidor corriendo en http://localhost:8080
+🚀 Ejecutando API REST...
+2025/11/27 00:22:38 No se pudo conectar a la BD:dial tcp: lookup db on 127.0.0.53:53: server misbehaving
+exit status 1
+make: *** [Makefile:81: run] Error 1
